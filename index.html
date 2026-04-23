@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerala Live TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c0f;
+    --surface:   #111418;
+    --card:      #181d24;
+    --border:    #1f2730;
+    --gold:      #e8b84b;
+    --gold2:     #f5d07a;
+    --red:       #e84b4b;
+    --green:     #2ecc71;
+    --text:      #e8e0d0;
+    --muted:     #6b7685;
+    --active-bg: #1a2535;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 54px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold), #c8860a);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: -2px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(232,75,75,0.15);
+    border: 1px solid rgba(232,75,75,0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--red);
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* ── Layout ── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 230px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar-label {
+    padding: 14px 16px 8px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .channel-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .channel-item:hover {
+    background: var(--active-bg);
+    border-left-color: var(--gold);
+  }
+
+  .channel-item.active {
+    background: var(--active-bg);
+    border-left-color: var(--gold);
+  }
+
+  .ch-logo {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .ch-info { flex: 1; min-width: 0; }
+  .ch-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-type { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+  .ch-live {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Player ── */
+  .player-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .player-wrap {
+    flex: 1;
+    position: relative;
+    background: #000;
+  }
+
+  .player-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .no-stream {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+  }
+
+  .no-stream-icon { font-size: 48px; opacity: 0.3; }
+  .no-stream-text { font-size: 16px; letter-spacing: 2px; }
+
+  /* ── Now Playing bar ── */
+  .now-playing {
+    height: 48px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    flex-shrink: 0;
+  }
+
+  .np-logo {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+
+  .np-name { font-size: 15px; font-weight: 600; color: var(--gold); }
+  .np-sep  { color: var(--border); }
+  .np-type { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+  .np-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+  .yt-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .yt-btn:hover {
+    background: rgba(232,184,75,0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* scrollbar */
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* category divider */
+  .cat-divider {
+    padding: 12px 16px 6px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 700;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📺</div>
+    <div>
+      <div class="logo-text">KERALA LIVE</div>
+      <div class="logo-sub">Malayalam TV</div>
+    </div>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    LIVE
+  </div>
+</header>
+
+<div class="main">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-label">Entertainment</div>
+
+    <div class="channel-item active" onclick="play(this)"
+      data-id="UCp_r6Z-Oh0YTf-ym71z5Nqg"
+      data-name="Asianet"
+      data-type="Entertainment"
+      data-color="#1a3a5c"
+      data-text="#4a9eda">
+      <div class="ch-logo" style="background:#1a3a5c;color:#4a9eda">AS</div>
+      <div class="ch-info">
+        <div class="ch-name">Asianet</div>
+        <div class="ch-type">Entertainment</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCUPD0jQo-EP0B1Nf4uzeIMA"
+      data-name="Mazhavil Manorama"
+      data-type="Entertainment"
+      data-color="#1a1a3a"
+      data-text="#7b6cf5">
+      <div class="ch-logo" style="background:#1a1a3a;color:#7b6cf5">MM</div>
+      <div class="ch-info">
+        <div class="ch-name">Mazhavil Manorama</div>
+        <div class="ch-type">Entertainment</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCHyU1e7YmhHgUnVwpP5hpYA"
+      data-name="Surya TV"
+      data-type="Entertainment"
+      data-color="#3a1a1a"
+      data-text="#f07b4a">
+      <div class="ch-logo" style="background:#3a1a1a;color:#f07b4a">SU</div>
+      <div class="ch-info">
+        <div class="ch-name">Surya TV</div>
+        <div class="ch-type">Entertainment</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCSrS91iCgFCv_3KwjWWHzSg"
+      data-name="Flowers TV"
+      data-type="Entertainment"
+      data-color="#1a2e1a"
+      data-text="#4ecb71">
+      <div class="ch-logo" style="background:#1a2e1a;color:#4ecb71">FL</div>
+      <div class="ch-info">
+        <div class="ch-name">Flowers TV</div>
+        <div class="ch-type">Entertainment</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCbrfwFuwMVRtxUTtEYJUKKg"
+      data-name="Zee Keralam"
+      data-type="Entertainment"
+      data-color="#2a1a3a"
+      data-text="#bc6cf5">
+      <div class="ch-logo" style="background:#2a1a3a;color:#bc6cf5">ZK</div>
+      <div class="ch-info">
+        <div class="ch-name">Zee Keralam</div>
+        <div class="ch-type">Entertainment</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="cat-divider">News</div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCf8w5m0YsRa8MHQ5bwSGmbw"
+      data-name="Asianet News"
+      data-type="News"
+      data-color="#1a2a1a"
+      data-text="#4a9eda">
+      <div class="ch-logo" style="background:#1a2a3a;color:#4a9eda">AN</div>
+      <div class="ch-info">
+        <div class="ch-name">Asianet News</div>
+        <div class="ch-type">News 24/7</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCFVSGkpK4NzBPGD2FGkumjA"
+      data-name="Manorama News"
+      data-type="News"
+      data-color="#1a1a2a"
+      data-text="#7b6cf5">
+      <div class="ch-logo" style="background:#1a1a2a;color:#7b6cf5">MN</div>
+      <div class="ch-info">
+        <div class="ch-name">Manorama News</div>
+        <div class="ch-type">News 24/7</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCv3gD-jjMCNnMJyRMBT3Kcg"
+      data-name="Mathrubhumi News"
+      data-type="News"
+      data-color="#2a1a1a"
+      data-text="#e86b4a">
+      <div class="ch-logo" style="background:#2a1a1a;color:#e86b4a">MB</div>
+      <div class="ch-info">
+        <div class="ch-name">Mathrubhumi News</div>
+        <div class="ch-type">News 24/7</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+    <div class="channel-item" onclick="play(this)"
+      data-id="UCQQgBo1pFGBQy3Z7_FMZplA"
+      data-name="Media One"
+      data-type="News"
+      data-color="#1a2a2a"
+      data-text="#4acbcb">
+      <div class="ch-logo" style="background:#1a2a2a;color:#4acbcb">M1</div>
+      <div class="ch-info">
+        <div class="ch-name">Media One</div>
+        <div class="ch-type">News 24/7</div>
+      </div>
+      <div class="ch-live"></div>
+    </div>
+
+  </div>
+
+  <!-- Player -->
+  <div class="player-area">
+    <div class="player-wrap" id="playerWrap">
+      <iframe id="ytPlayer"
+        src="https://www.youtube.com/embed/live_stream?channel=UCp_r6Z-Oh0YTf-ym71z5Nqg&autoplay=1&rel=0"
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div class="now-playing">
+      <div class="np-logo" id="npLogo" style="background:#1a3a5c;color:#4a9eda">AS</div>
+      <div class="np-name" id="npName">Asianet</div>
+      <div class="np-sep">·</div>
+      <div class="np-type" id="npType">Entertainment</div>
+      <div class="np-right">
+        <a class="yt-btn" id="ytLink" href="https://www.youtube.com/channel/UCp_r6Z-Oh0YTf-ym71z5Nqg/live" target="_blank">
+          ▶ Open in YouTube
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function play(el) {
+    document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+
+    const id    = el.dataset.id;
+    const name  = el.dataset.name;
+    const type  = el.dataset.type;
+    const color = el.dataset.color;
+    const text  = el.dataset.text;
+    const abbr  = el.querySelector('.ch-logo').textContent;
+
+    // Update player
+    document.getElementById('ytPlayer').src =
+      `https://www.youtube.com/embed/live_stream?channel=${id}&autoplay=1&rel=0`;
+
+    // Update now playing bar
+    const logo = document.getElementById('npLogo');
+    logo.textContent = abbr;
+    logo.style.background = color;
+    logo.style.color = text;
+    document.getElementById('npName').textContent = name;
+    document.getElementById('npType').textContent = type;
+    document.getElementById('ytLink').href = `https://www.youtube.com/channel/${id}/live`;
+  }
+</script>
+</body>
+</html>
